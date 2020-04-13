@@ -1,0 +1,6 @@
+G:\Work\CPlus\CPlusPlusCodeChecker\CPlusPlusCheckr\bin\Debug\CPlusPlusCheckr.exe
+G:\Work\CPlus\CPlusPlusCodeChecker\CPlusPlusCheckr\bin\Debug\CPlusPlusCheckr.pdb
+G:\Work\CPlus\CPlusPlusCodeChecker\CPlusPlusCheckr\obj\Debug\CPlusPlusCheckr.csprojAssemblyReference.cache
+G:\Work\CPlus\CPlusPlusCodeChecker\CPlusPlusCheckr\obj\Debug\CPlusPlusCheckr.csproj.CoreCompileInputs.cache
+G:\Work\CPlus\CPlusPlusCodeChecker\CPlusPlusCheckr\obj\Debug\CPlusPlusCheckr.exe
+G:\Work\CPlus\CPlusPlusCodeChecker\CPlusPlusCheckr\obj\Debug\CPlusPlusCheckr.pdb
