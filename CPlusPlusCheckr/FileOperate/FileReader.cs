@@ -31,7 +31,6 @@ public class FileReader: Singleton<FileReader>
 
 		}
 
-
 		return ReadErrorType.RET_SUCCESS;
 	}
 }
