@@ -6,32 +6,42 @@ using System.IO;
 
 public class FileReader: Singleton<FileReader>
 {
-	public enum ReadErrorType
+	public enum ReadFileResultType
 	{
-		RET_SUCCESS = 0,			//	Read Success
-		RET_ERROR_FILE_NAME,		//	File name is error(null or empty)
-		RET_ERROR_FILE_OPEN_FAILED,	//	Can not open file
-		RET_NOFILE,					//	No this File
-
+		RFRT_SUCCESS = 0,           //	Read Success
+		RFRT_ERROR_FILE_NAME,       //	File name is error(null or empty)
+		RFRT_ERROR_FILE_OPEN_FAILED,    //	Can not open file
+		RFRT_NOFILE,					//	No this File
 	};
 
-	public ReadErrorType ReadFile(string strFile)
+	public ReadFileResultType ReadFile(string strFile, Action<string> pFunc)
 	{
 		if (!CheckStringValid(strFile))
-			return ReadErrorType.RET_ERROR_FILE_NAME;
+			return ReadFileResultType.RFRT_ERROR_FILE_NAME;
 
 		using (FileStream pFileStream = new FileStream(strFile, FileMode.Open))
 		{
 			if (null == pFileStream)
-				return ReadErrorType.RET_ERROR_FILE_OPEN_FAILED;
+				return ReadFileResultType.RFRT_ERROR_FILE_OPEN_FAILED;
 
 			StreamReader pReader = new StreamReader(pFileStream);
 			if (null == pReader)
-				return ReadErrorType.RET_ERROR_FILE_OPEN_FAILED;
+				return ReadFileResultType.RFRT_ERROR_FILE_OPEN_FAILED;
 
+			while (!pReader.EndOfStream)
+			{
+				pFunc(pReader.ReadLine());
+			}
+
+			pReader.Dispose();
+			pReader.Close();
+			pReader = null;
+
+			pFileStream.Dispose();
+			pFileStream.Close();
 		}
 
-		return ReadErrorType.RET_SUCCESS;
+		return ReadFileResultType.RFRT_SUCCESS;
 	}
 }
 

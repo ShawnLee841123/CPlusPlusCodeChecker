@@ -3,15 +3,20 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
+
 public class Singleton<T> where T : new()
 {
 	private static T _instance;
+	private static object _lockObj = new object();
 
 	public static T Ins()
 	{
 		if (null == _instance)
 		{
-			_instance = new T();
+			lock(_lockObj)
+			{
+				_instance = new T();
+			}		
 		}
 
 		return _instance;
