@@ -42,6 +42,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="FileOperate\FileReader.cs" />
+    <Compile Include="FileProgress\TemplateFileDefines.cs" />
+    <Compile Include="FileProgress\TemplateFiles.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Singleton\Singleton.cs" />
