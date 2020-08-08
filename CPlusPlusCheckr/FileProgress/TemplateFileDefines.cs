@@ -226,6 +226,22 @@ public class TemplateFunctionDefine
 		strFunctionDeclear = OnFunctionConstParse(strFunctionDeclear);
 		if ("" == strFunctionDeclear)
 			return false;
+
+		strFunctionDeclear = OnFunctionReturnTypeParse(strFunctionDeclear);
+		if ("" == strFunctionDeclear)
+			return false;
+
+		strFunctionDeclear = OnFunctionNameParse(strFunctionDeclear);
+		if ("" == strFunctionDeclear)
+			return false;
+
+		string[] arrNameList = strFunctionDeclear.Split(new char[] { ')' });
+		if (!FileReader.Ins().CheckStringValid(arrNameList[0]))
+			return false;
+
+		int nParam = AddParamList(arrNameList[0]);
+
+		return true;
 	}
 
 	//	parse function virtual
@@ -314,7 +330,7 @@ public class TemplateFunctionDefine
 		strFunctionDelear = strFunctionDelear.Replace(strTemp, "");
 		return strFunctionDelear;
 	}
-
+	//	parse function name
 	public string OnFunctionNameParse(string strLine)
 	{
 		if (!FileReader.Ins().CheckStringValid(strLine))
