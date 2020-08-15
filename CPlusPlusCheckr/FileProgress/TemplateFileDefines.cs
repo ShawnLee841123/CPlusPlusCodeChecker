@@ -6,8 +6,10 @@ using System.Text;
 
 public class TemplateFileDefines
 {
-	
+
 }
+
+#region Function Param define
 
 public class TemplateFunctionParamDefine
 {
@@ -186,6 +188,10 @@ public class TemplateFunctionParamDefine
 	}
 #endregion
 }
+
+#endregion
+
+#region Function Declear define
 
 public class TemplateFunctionDefine
 {
@@ -390,3 +396,280 @@ public class TemplateFunctionDefine
 	}
 
 }
+
+#endregion
+
+#region Field Base define
+
+public class TemplateFieldBase
+{
+#region Field Parse Result
+	public enum EFieldParseResultType
+	{
+		EFPRT_PARSE_FAILED = 0,				//	parse failed
+		EFPRT_PARSE_SUCCESS,				//	parse success
+		EFPRT_CHILD_PARSE_SUCCESS,			//	child field parse success
+		EFPRT_NEW_CHILD,					//	child field begin
+		EFPRT_END_FIELD,					//	child field end
+
+		EFPRT_MAX
+	}
+#endregion
+
+	#region Variable
+
+	protected Dictionary<string, TemplateFieldBase> dicChild = null;
+	public string Name { get; protected set; }
+
+	protected TemplateFieldBase curChild = null;
+
+	protected bool Parsed = true;
+	protected bool Finished = false;
+
+#endregion
+
+	public TemplateFieldBase()
+	{
+		Name = "";
+		if (null == dicChild)
+			dicChild = new Dictionary<string, TemplateFieldBase>();
+	}
+
+	public TemplateFieldBase(string strName)
+	{
+		Name = strName;
+		if (null == dicChild)
+			dicChild = new Dictionary<string, TemplateFieldBase>();
+	}
+
+	public virtual bool AddChild(string strName, TemplateFieldBase oChild)
+	{
+		if (null == dicChild)
+			dicChild = new Dictionary<string, TemplateFieldBase>();
+
+		if (!FileReader.Ins().CheckStringValid(strName))
+		{
+			return false;
+		}
+
+		if (null == oChild)
+		{
+			return false;
+		}
+
+		if (dicChild.ContainsKey(strName))
+		{
+			return false;
+		}
+
+		dicChild.Add(strName, oChild);
+		return true;
+	}
+
+	public TemplateFieldBase GetChild(string strChildName)
+	{
+		if (!FileReader.Ins().CheckStringValid(strChildName))
+		{
+			return null;
+		}
+
+		if (dicChild.Count <= 0)
+		{
+			return null;
+		}
+
+		if (dicChild.ContainsKey(strChildName))
+		{
+			return dicChild[strChildName];
+		}
+
+		return null;
+	}
+
+	public bool SetName(string strName)
+	{
+		if (FileReader.Ins().CheckStringValid(strName))
+		{
+			Name = strName;
+			return true;
+		}
+
+		return false;
+	}
+
+	public virtual EFieldParseResultType OnReadFileLine(string strLine)
+	{
+		if (null != curChild)
+		{
+			EFieldParseResultType eRet = curChild.OnFieldParse(strLine);
+			if (EFieldParseResultType.EFPRT_PARSE_SUCCESS == eRet)
+			{
+				//	child parse success
+				return EFieldParseResultType.EFPRT_CHILD_PARSE_SUCCESS;
+			}
+			else if (EFieldParseResultType.EFPRT_NEW_CHILD == eRet)
+			{
+				//	child create child
+				return EFieldParseResultType.EFPRT_NEW_CHILD;
+			}
+			else if (EFieldParseResultType.EFPRT_END_FIELD == eRet)
+			{
+				
+				curChild = null;
+				return EFieldParseResultType.EFPRT_END_FIELD;
+			}
+
+			//	parse failed
+			return EFieldParseResultType.EFPRT_PARSE_FAILED;
+		}
+
+		return OnFieldParse(strLine);
+	}
+
+	public virtual EFieldParseResultType OnFieldParse(string strLine)
+	{
+		//	结束标记
+		if (Finished)
+			return EFieldParseResultType.EFPRT_PARSE_FAILED;
+
+		TemplateFieldBase child = ParseNewField(strLine);
+		if (null != child)
+		{
+			curChild = child;
+			return EFieldParseResultType.EFPRT_NEW_CHILD;
+		}
+
+		return EFieldParseResultType.EFPRT_PARSE_FAILED;
+	}
+
+	public virtual TemplateFieldBase ParseNewField(string strLine)
+	{
+		if (strLine.Contains("#param region"))
+		{
+			TemplateRegionDefine tempRegion = new TemplateRegionDefine();
+			if (tempRegion.ParseRegionName(strLine))
+				return tempRegion;
+		}
+		else if (strLine.Contains("class "))
+		{
+			TemplateClassDefine tempClass = new TemplateClassDefine();
+			if (tempClass.ParseClassName(strLine))
+				return tempClass;
+		}
+
+		return null;
+	}
+
+	public virtual bool ParseRegionName(string strLine)
+	{
+		return false;
+	}
+}
+#endregion
+
+public class TemplateRegionDefine : TemplateFieldBase
+{
+	public TemplateRegionDefine()
+	{ }
+
+	public new EFieldParseResultType OnFieldParse(string strLine)
+	{
+		EFieldParseResultType eBaseRet = base.OnFieldParse(strLine);
+
+		if (EFieldParseResultType.EFPRT_PARSE_FAILED != eBaseRet)
+			return eBaseRet;
+		
+		//	field end
+		if (strLine.Contains("#param endregion"))
+		{
+			Finished = true;
+			return EFieldParseResultType.EFPRT_END_FIELD;
+		}
+		
+		//	todo
+
+		return EFieldParseResultType.EFPRT_PARSE_FAILED;
+	}
+
+	public new TemplateFieldBase ParseNewField(string strLine)
+	{
+		return base.ParseNewField(strLine);
+	}
+
+	public new bool ParseRegionName(string strLine)
+	{
+		if (!FileReader.Ins().CheckStringValid(strLine))
+			return false;
+
+		if (!strLine.Contains("#param region"))
+			return false;
+
+		string strName = strLine.Replace("#param region ", "");
+		if (!FileReader.Ins().CheckStringValid(strName))
+			return false;
+
+		return SetName(strName);
+	}
+}
+
+#region Class Declear define
+
+public class TemplateClassDefine : TemplateFieldBase
+{
+	public TemplateClassDefine()
+	{ }
+
+	public new EFieldParseResultType OnFieldParse(string strLine)
+	{
+		EFieldParseResultType eBaseRet = base.OnFieldParse(strLine);
+
+		if (EFieldParseResultType.EFPRT_PARSE_FAILED != eBaseRet)
+			return eBaseRet;
+
+		//	field end
+		if (strLine.Contains("};"))
+		{
+			Finished = true;
+			return EFieldParseResultType.EFPRT_END_FIELD;
+		}
+
+		//	todo
+
+		return EFieldParseResultType.EFPRT_PARSE_FAILED;
+	}
+
+	public new TemplateFieldBase ParseNewField(string strLine)
+	{
+		return base.ParseNewField(strLine);
+	}
+
+	public bool ParseClassName(string strLine)
+	{
+		if (!FileReader.Ins().CheckStringValid(strLine))
+			return false;
+
+		if (!strLine.Contains("class"))
+			return false;
+
+		string strKeyNames = "";
+		if (strLine.Contains(":"))
+		{
+			string[] arrKeyNames = strLine.Split(new char[] { ':' });
+			strKeyNames = arrKeyNames[0];
+			//	Parent or Interface
+		}
+		else
+		{
+			strKeyNames = strLine;
+		}
+
+		string strTempName = strKeyNames.Replace("class ", "");
+
+		bool bNamed = SetName(strTempName.Replace(" ", ""));
+		//	todo Parent or Interface
+
+		return bNamed;
+	}
+}
+
+#endregion

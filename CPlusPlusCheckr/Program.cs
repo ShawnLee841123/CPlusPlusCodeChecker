@@ -9,6 +9,11 @@ namespace CPlusPlusCheckr
 	{
 		static void Main(string[] args)
 		{
+			FileReader.Ins().LogError("lalla");
+			FileReader.Ins().LogWarnning("ccccc");
+			FileReader.Ins().LogMsg("aaaaa");
+
+			Console.ReadLine();
 		}
 	}
 }

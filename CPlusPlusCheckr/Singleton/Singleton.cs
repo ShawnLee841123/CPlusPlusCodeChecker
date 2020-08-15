@@ -54,4 +54,29 @@ public class Singleton<T> where T : new()
 
 		return true;
 	}
+
+	public void LogMsg(string strMsg)
+	{
+		string strOutput = string.Format("[MSG] {0}", strMsg);
+		LogOut(strOutput);
+	}
+
+	public void LogError(string strMsg)
+	{
+		string strOutput = string.Format("[ERROR] {0}", strMsg);
+		LogOut(strOutput);
+	}
+
+	public void LogWarnning(string strMsg)
+	{
+		string strOutput = string.Format("[WARNNING] {0}", strMsg);
+		LogOut(strOutput);
+	}
+
+	protected void LogOut(string strMsg)
+	{
+		string strTime = DateTime.UtcNow.ToString("yyyy:MM:dd-HH:mm:ss:fff");
+		string strOutput = string.Format("[{0}] {1}", strTime, strMsg);
+		Console.WriteLine(strOutput);
+	}
 };
